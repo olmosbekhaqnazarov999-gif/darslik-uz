@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<title>Darslik.uz — 1–11-Sinf Aqlli Ta'lim</title>
+<style>
+body{font-family:Arial,sans-serif;background:#eef2ff;padding:20px;color:#0f172a}
+.box{max-width:800px;margin:auto;background:#fff;padding:25px;border-radius:16px;box-shadow:0 5px 20px rgba(0,0,0,0.1)}
+.top{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #e2e8f0;padding-bottom:10px}
+.ball{background:#fef3c7;color:#b45309;padding:6px 14px;border-radius:15px;font-weight:bold}
+.row{display:flex;gap:10px;margin:15px 0;flex-wrap:wrap}
+select,input,textarea{padding:10px;font-size:16px;border-radius:8px;border:1px solid #cbd5e1}
+button{padding:10px 18px;font-size:15px;border:none;border-radius:8px;cursor:pointer;font-weight:bold;background:#2563eb;color:#fff}
+button:hover{background:#1d4ed8}
+.green{background:#10b981}.orange{background:#f59e0b}
+.card{background:#eff6ff;border-left:5px solid #2563eb;padding:15px;border-radius:8px;margin:15px 0}
+.res{background:#f8fafc;border:1px solid #cbd5e1;padding:15px;border-radius:8px;margin-top:12px;line-height:1.6}
+.opt{display:block;width:100%;text-align:left;margin:6px 0;background:#f1f5f9;color:#0f172a}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="top">
+    <h2>🎓 Darslik.uz (1–11-sinflar)</h2>
+    <div class="ball">⭐ Ball: <span id="b">0</span></div>
+  </div>
+  <div class="row">
+    <select id="sinf" onchange="yangila()">
+      <option value="1">1-sinf</option><option value="2">2-sinf</option><option value="3">3-sinf</option>
+      <option value="4">4-sinf</option><option value="5" selected>5-sinf</option><option value="6">6-sinf</option>
+      <option value="7">7-sinf</option><option value="8">8-sinf</option><option value="9">9-sinf</option>
+      <option value="10">10-sinf</option><option value="11">11-sinf</option>
+    </select>
+    <select id="fan" onchange="yangila()">
+      <option value="Matematika">📐 Matematika</option>
+      <option value="Ingliz tili">🇬🇧 Ingliz tili</option>
+    </select>
+    <button onclick="yangila()">📖 Darslikni ochish</button>
+  </div>
+  <div class="card">
+    <b id="sarlavha"></b>
+    <p id="matn" style="margin:6px 0 0 0"></p>
+  </div>
+  <div class="row">
+    <button onclick="och('dars')">✍️ Uy vazifasi</button>
+    <button class="green" onclick="och('test')">🧠 Test yechish</button>
+    <button class="orange" onclick="och('admin')">🔄 Yangi kitob (Admin)</button>
+  </div>
+  <div id="dars">
+    <div class="row">
+      <input id="inp" placeholder="Misol (12*5+4) yoki tenglama (2*x+6=16)..." style="flex:1">
+      <button onclick="yech()">💡 Tushuntirib ber</button>
+      <button class="orange" id="ovoz" onclick="oqi()" style="display:none">🔊 Eshitish</button>
+    </div>
+    <div id="javob" class="res" style="display:none"></div>
+  </div>
+  <div id="test" style="display:none">
+    <button class="green" onclick="testTuz()">🎲 Yangi savol</button>
+    <div id="testBox" class="res" style="display:none">
+      <b id="savol"></b><div id="varlar"></div><p id="tNatija"></p>
+    </div>
+  </div>
+  <div id="admin" style="display:none">
+    <input id="kNom" placeholder="Yangi kitob nomi (2026-yil)" style="width:95%;margin-bottom:8px">
+    <textarea id="kMavzu" rows="2" placeholder="Yangi mavzu va qoida..." style="width:95%;margin-bottom:8px"></textarea>
+    <button class="green" onclick="saqla()">💾 Saqlash</button>
+  </div>
+</div>
+<script>
+let ball = Number(localStorage.getItem("dBall") || 0);
+document.getElementById("b").innerText = ball;
+const bazaviy = {
+  "1-Matematika":"1-sinf Matematika: 1 dan 20 gacha qo'shish va ayirish.",
+  "2-Matematika":"2-sinf Matematika: 100 ichida amallar va ko'paytirish jadvali.",
+  "3-Matematika":"3-sinf Matematika: Ko'paytirish-bo'lish va perimetr P=2*(a+b).",
+  "4-Matematika":"4-sinf Matematika: Tezlik-vaqt-masofa (S=v*t) va yuza (S=a*b).",
+  "5-Matematika":"5-sinf Matematika: Natural sonlar, kasrlar va tenglamalar (a*x+b=c).",
+  "6-Matematika":"6-sinf Matematika: Manfiy sonlar, proporsiya va aylana uzunligi.",
+  "7-Matematika":"7-sinf Algebra: Chiziqli tenglamalar va qisqa ko'paytirish formulalari.",
+  "8-Matematika":"8-sinf Algebra: Kvadrat tenglamalar (D=b²-4ac) va Pifagor teoremasi.",
+  "9-Matematika":"9-sinf Algebra: Progressiyalar, funksiyalar va trigonometriya.",
+  "10-Matematika":"10-sinf Algebra: Trigonometrik tenglamalar va hosila.",
+  "11-Matematika":"11-sinf Algebra: Integral, logarifmlar va ehtimollar nazariyasi.",
+  "1-Ingliz tili":"1-sinf English: Salomlashish (Hello!), ranglar va raqamlar.",
+  "2-Ingliz tili":"2-sinf English: Fe'llar (run, jump) va 'I can / I can't'.",
+  "3-Ingliz tili":"3-sinf English: 'To be' (am, is, are) va kasblar.",
+  "4-Ingliz tili":"4-sinf English: Present Continuous va ob-havo.",
+  "5-Ingliz tili":"5-sinf English: Present Simple va kun tartibi (Daily routines).",
+  "6-Ingliz tili":"6-sinf English: Past Simple (o'tgan zamon) va sifat darajalari.",
+  "7-Ingliz tili":"7-sinf English: Future (will / going to) va modal fe'llar.",
+  "8-Ingliz tili":"8-sinf English: Present Perfect va First Conditional.",
+  "9-Ingliz tili":"9-sinf English: Passive Voice (Majhul nisbat).",
+  "10-Ingliz tili":"10-sinf English: Reported Speech va Relative Clauses.",
+  "11-Ingliz tili":"11-sinf English: IELTS/CEFR tayyorgarlik va Phrasal Verbs."
+};
+let kitoblar = JSON.parse(localStorage.getItem("dKitob")) || bazaviy;
+const lugat = {"book":"kitob","school":"maktab","knowledge":"bilim","victory":"g'alaba","future":"kelajak","apple":"olma","hello":"salom","student":"o'quvchi","teacher":"o'qituvchi"};
+
+function och(id){
+  ["dars","test","admin"].forEach(x=>document.getElementById(x).style.display=(x===id?"block":"none"));
+}
+function yangila(){
+  let s=document.getElementById("sinf").value, f=document.getElementById("fan").value;
+  document.getElementById("sarlavha").innerText="📘 "+s+"-sinf | "+f;
+  document.getElementById("matn").innerText=kitoblar[s+"-"+f];
+  document.getElementById("ovoz").style.display=(f==="Ingliz tili"?"inline-block":"none");
+  document.getElementById("javob").style.display="none";
+}
+function yech(){
+  let v=document.getElementById("inp").value.trim(), f=document.getElementById("fan").value, j=document.getElementById("javob");
+  if(!v) return alert("Avval misol yoki so'z yozing!");
+  j.style.display="block";
+  if(f==="Matematika"){
+    let t=v.replace(/\s+/g,"").toLowerCase();
+    let m=t.match(/^([+-]?\d*)\*?x([+-]\d+)?=([+-]?\d+)$/);
+    if(m){
+      let a=(m===""||m==="+")?1:(m==="-"?-1:Number(m));
+      let b=m?Number(m):0, c=Number(m);
+      let x=(c-b)/a;
+      j.innerHTML="<b>✅ Tenglama yechildi:</b><br>1) "+a+"x = "+(c-b)+"<br>2) <b>Javob: x = "+x+"</b> (+10 ball)";
+      ballQosh(10);
+    } else {
+      try{
+        let res=Function('"use strict";return ('+v.replace(/[^-()\d/*+.]/g,'')+')')();
+        j.innerHTML="<b>✅ Yechim:</b> "+v+" = <b>"+res+"</b> (+5 ball)";
+        ballQosh(5);
+      }catch(e){ j.innerHTML="⚠️ To'g'ri misol yozing (Masalan: 15*4+10 yoki 2*x+6=16)"; }
+    }
+  } else {
+    let tr=lugat[v.toLowerCase()]||"Yangi darslik lug'ati bo'yicha talaffuzini tinglab mashq qiling!";
+    j.innerHTML="<b>🇬🇧 So'z:</b> "+v+"<br><b>Ma'nosi:</b> "+tr+" (+5 ball)";
+    ballQosh(5);
+  }
+}
+function oqi(){
+  let v=document.getElementById("inp").value.trim();
+  if(!v) return;
+  let u=new SpeechSynthesisUtterance(v); u.lang="en-US"; speechSynthesis.speak(u);
+}
+let togri="";
+function testTuz(){
+  let s=Number(document.getElementById("sinf").value), f=document.getElementById("fan").value;
+  document.getElementById("testBox").style.display="block";
+  document.getElementById("tNatija").innerText="";
+  let vd=document.getElementById("varlar"); vd.innerHTML="";
+  if(f==="Matematika"){
+    let a=Math.floor(Math.random()*s*5)+3, b=Math.floor(Math.random()*s*4)+2, ans=a+b;
+    togri=String(ans);
+    document.getElementById("savol").innerText=s+"-sinf: "+a+" + "+b+" = ?";
+    [ans,ans+2,ans-1,ans+5].sort(()=>Math.random()-0.5).forEach(x=>{
+      let btn=document.createElement("button"); btn.className="opt"; btn.innerText=x;
+      btn.onclick=()=>tekshir(String(x)); vd.appendChild(btn);
+    });
+  } else {
+    togri="Bilim";
+    document.getElementById("savol").innerText=s+"-sinf: 'Knowledge' so'zining ma'nosi?";
+    ["Bilim","Maktab","Kitob","Do'st"].sort(()=>Math.random()-0.5).forEach(x=>{
+      let btn=document.createElement("button"); btn.className="opt"; btn.innerText=x;
+      btn.onclick=()=>tekshir(x); vd.appendChild(btn);
+    });
+  }
+}
+function tekshir(x){
+  let n=document.getElementById("tNatija");
+  if(x===togri){ n.style.color="green"; n.innerText="🎉 To'g'ri! (+10 ball)"; ballQosh(10); }
+  else{ n.style.color="red"; n.innerText="❌ Xato! To'g'ri javob: "+togri; }
+}
+function saqla(){
+  let s=document.getElementById("sinf").value, f=document.getElementById("fan").value;
+  let n=document.getElementById("kNom").value, m=document.getElementById("kMavzu").value;
+  if(!n||!m) return alert("To'ldiring!");
+  kitoblar[s+"-"+f]="🆕 "+n+": "+m;
+  localStorage.setItem("dKitob",JSON.stringify(kitoblar));
+  alert("Saqlandi!"); yangila();
+}
+function ballQosh(k){ ball+=k; localStorage.setItem("dBall",ball); document.getElementById("b").innerText=ball; }
+yangila();
+</script>
+</body>
+</html>
+13:19 19/11/2026ssss
